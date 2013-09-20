@@ -1,0 +1,11 @@
+{
+  "name": "express-routing",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "prelude-ls": "1.0.3"
+  },
+  "devDependencies": {
+    "express": "3.0.0"
+  }
+}
