@@ -1,6 +1,6 @@
 {
   "name": "express-routing",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "dependencies": {
     "prelude-ls": "1.0.3"

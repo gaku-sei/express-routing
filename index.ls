@@ -1,7 +1,7 @@
 # Requires
 
 require! [fs.read-file-sync, os.EOL]
-{join, dirname} = require \path
+{join, dirname, resolve} = require \path
 {empty, is-type, apply, id, fix, span, values, take-while, split, map, reject, words, foldr, replicate} = require \prelude-ls
 
 # Init
@@ -46,7 +46,7 @@ build-routes = ->
     path                = (iterate (lvl - nlvl) / 2, dirname) path if nlvl < lvl
 
     match x, y, z
-      | (in methods), (!= void), (!= void) => agg.push [x, (join path, y), z]
+      | (in methods), (!= void), (!= void) => agg.push [x, (resolve join path, y), z]
       | \resources,   (!= void), (!= void) => resources agg, path, y, z, opts
       | (!= void), void, void              => path = join path, x
       | otherwise                          => throw new Error "Format error: '#i'"
