@@ -5,26 +5,23 @@ require! [fs.read-file-sync, os.EOL]
 {empty, is-type, apply, id, fix, span, values, take-while, split, map, reject, words, foldr, replicate} = require \prelude-ls
 
 # Init
-
 const methods = <[GET POST PUT DELETE]>
 
 options =
   routes-path: \./config/routes
 
 # Utils
-
 iterate = (n, f) -> foldr (<<), id, (replicate n, f)
 
 lookup = (obj, [head, ...rest]:keys, not-found) ->
   (if empty rest then obj[head] else lookup obj[head], rest) ? not-found
 
 # Core
-
 load-splitted-config-file = ->
   read-file-sync options.routes-path, \utf-8
     |> split EOL |> map take-while (!= \#) |> reject empty
 
-resources = (agg, ctx, path, ctr, opts) ->
+resources = (agg, ctx, path, ctr, [mod, ...mets]) ->
   partial-path = -> apply join, [ctx, path] ++ map id, &
   routes =
     index:  [\GET    partial-path!,              "#ctr.index"]
@@ -34,8 +31,10 @@ resources = (agg, ctx, path, ctr, opts) ->
     edit:   [\GET    (partial-path \:id, \edit), "#ctr.edit"]
     update: [\PUT    (partial-path \:id),        "#ctr.update"]
     delete: [\DELETE (partial-path \:id),        "#ctr._delete"]
-  #Here use opts to only or except routes
-  apply agg~push, values routes
+  apply agg~push, switch mod
+    | \only   => [v for k, v of routes when k in mets]
+    | \except => [v for k, v of routes when k not in mets]
+    | _       => values routes
 
 build-routes = ->
   (fix (reducer) -> ([head, ...rest]:list, lvl, path, agg) ->
@@ -53,8 +52,6 @@ build-routes = ->
     reducer rest, nlvl, path, agg)(load-splitted-config-file!, 0, \/, [])
 
 # Exports
-
-#export init = (app, controllers) ->
 module.exports = (app, controllers) ->
   for [method, path, keys] in build-routes!
     app[method.to-lower-case!] path, lookup controllers, (split \. keys)
